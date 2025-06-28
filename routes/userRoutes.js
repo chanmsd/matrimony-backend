@@ -1,32 +1,28 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const User = require("../models/User");
+const User = require('../models/User');
 
-// Register
-router.post("/register", async (req, res) => {
+// Get all users
+router.get('/', async (req, res) => {
   try {
-    const user = new User(req.body);
-    await user.save();
-    res.json({ message: "User registered", user });
+    const users = await User.find();
+    res.json(users);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 
-// Login
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user || user.password !== password) {
-    return res.status(401).json({ error: "Invalid credentials" });
-  }
-  res.json({ message: "Login success", user });
-});
+// Add a new user
+router.post('/', async (req, res) => {
+  const { name, email, age, gender, location } = req.body;
 
-// View all profiles
-router.get("/", async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+  try {
+    const newUser = new User({ name, email, age, gender, location });
+    await newUser.save();
+    res.status(201).json({ message: 'User created', user: newUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create user' });
+  }
 });
 
 module.exports = router;
